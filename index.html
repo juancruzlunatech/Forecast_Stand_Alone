@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Juan Standalone Weather</title>
+  <title>Weather Forecast Standalone</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -288,42 +288,337 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
-  </style>
+
+    select {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      border-radius: 10px;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    .spacer {
+      height: 32px;
+    }
+
+    .time-display {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+      box-shadow: 0 14px 28px var(--shadow);
+    }
 </head>
 <body>
   <main class="shell">
-    <h1>Pronostico Rapido</h1>
-    <p class="subtitle">Archivo standalone: clima real con autocompletado, sin backend</p>
+    <h1>Weather Forecast</h1>
+    <p class="subtitle">Standalone: real weather data with autocomplete, no backend needed</p>
 
     <section class="toolbar">
-      <button id="reload">Actualizar</button>
-      <button id="themeToggle" title="Cambiar tema">🌙</button>
-      <button id="geolocate" title="Usar mi ubicación">📍</button>
+      <button id="reload">Refresh</button>
+      <button id="themeToggle" title="Toggle theme">🌙</button>
+      <button id="geolocate" title="Use my location">📍</button>
       <label class="field" for="city">
-        Ciudad
-        <input id="city" list="cityList" type="text" value="Wanaka" placeholder="Escribe una ciudad" />
+        <span id="cityLabel">City</span>
+        <input id="city" list="cityList" type="text" placeholder="Type a city name" />
         <datalist id="cityList"></datalist>
       </label>
-      <span class="state" id="state">Cargando...</span>
+      <label class="field" for="language">
+        <span id="languageLabel">Language</span>
+        <select id="language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Português</option>
+        </select>
+      </label>
+      <span class="state" id="state">Loading...</span>
     </section>
+
+    <div id="timeDisplay" class="time-display"></div>
 
     <section class="grid" id="forecast"></section>
 
+    <div class="spacer"></div>
+
     <section class="map-wrap">
       <div class="map-header">
-        <span>Mapa de la ciudad seleccionada</span>
-        <span id="mapLabel">Wanaka</span>
+        <span id="mapHeaderLabel">City Map</span>
+        <span id="mapLabel">Loading...</span>
       </div>
       <iframe
         id="cityMap"
         class="map"
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
-        title="Mapa de ciudad"></iframe>
+        title="City map"></iframe>
     </section>
   </main>
 
   <script>
+    // Translations
+    const translations = {
+      en: {
+        title: "Weather Forecast",
+        subtitle: "Standalone: real weather data with autocomplete, no backend needed",
+        refresh: "Refresh",
+        city: "City",
+        language: "Language",
+        loading: "Loading...",
+        loadingLocation: "Detecting location...",
+        cityMap: "City Map",
+        noForecast: "Type a city name to view forecast.",
+        consulting: "Consulting real weather...",
+        ready: "Ready: {count} results",
+        error: "Could not load: {error}",
+        today: "Today",
+        weatherCodes: {
+          0: "Clear",
+          1: "Mostly clear",
+          2: "Partly cloudy",
+          3: "Cloudy",
+          45: "Foggy",
+          48: "Foggy",
+          51: "Light drizzle",
+          53: "Drizzle",
+          55: "Heavy drizzle",
+          61: "Light rain",
+          63: "Rain",
+          65: "Heavy rain",
+          71: "Light snow",
+          73: "Snow",
+          75: "Heavy snow",
+          80: "Light showers",
+          81: "Showers",
+          82: "Heavy showers",
+          85: "Snow showers",
+          86: "Heavy snow showers",
+          95: "Thunderstorm",
+          96: "Thunderstorm with hail",
+          99: "Thunderstorm with hail"
+        }
+      },
+      es: {
+        title: "Pronóstico del Tiempo",
+        subtitle: "Standalone: datos de clima real con autocompletado, sin backend",
+        refresh: "Actualizar",
+        city: "Ciudad",
+        language: "Idioma",
+        loading: "Cargando...",
+        loadingLocation: "Detectando ubicación...",
+        cityMap: "Mapa de la Ciudad",
+        noForecast: "Escribe una ciudad para ver el pronóstico.",
+        consulting: "Consultando clima real...",
+        ready: "Listo: {count} resultados",
+        error: "No se pudo cargar: {error}",
+        today: "Hoy",
+        weatherCodes: {
+          0: "Despejado",
+          1: "Mayormente despejado",
+          2: "Parcialmente nublado",
+          3: "Nublado",
+          45: "Neblina",
+          48: "Neblina",
+          51: "Llovizna ligera",
+          53: "Llovizna",
+          55: "Llovizna fuerte",
+          61: "Lluvia ligera",
+          63: "Lluvia",
+          65: "Lluvia fuerte",
+          71: "Nieve ligera",
+          73: "Nieve",
+          75: "Nieve fuerte",
+          80: "Chubascos ligeros",
+          81: "Chubascos",
+          82: "Chubascos fuertes",
+          85: "Chubascos de nieve",
+          86: "Chubascos de nieve fuertes",
+          95: "Tormenta",
+          96: "Tormenta con granizo",
+          99: "Tormenta con granizo"
+        }
+      },
+      fr: {
+        title: "Prévisions Météorologiques",
+        subtitle: "Autonome: données météorologiques réelles avec autocomplétion, sans backend",
+        refresh: "Actualiser",
+        city: "Ville",
+        language: "Langue",
+        loading: "Chargement...",
+        loadingLocation: "Détection de la localisation...",
+        cityMap: "Carte de la Ville",
+        noForecast: "Tapez un nom de ville pour voir les prévisions.",
+        consulting: "Consultation des prévisions réelles...",
+        ready: "Prêt: {count} résultats",
+        error: "Impossible de charger: {error}",
+        today: "Aujourd'hui",
+        weatherCodes: {
+          0: "Dégagé",
+          1: "Principalement dégagé",
+          2: "Partiellement nuageux",
+          3: "Nuageux",
+          45: "Brumeux",
+          48: "Brumeux",
+          51: "Bruine légère",
+          53: "Bruine",
+          55: "Bruine forte",
+          61: "Pluie légère",
+          63: "Pluie",
+          65: "Pluie forte",
+          71: "Neige légère",
+          73: "Neige",
+          75: "Neige forte",
+          80: "Averses légères",
+          81: "Averses",
+          82: "Averses fortes",
+          85: "Averses de neige",
+          86: "Averses de neige fortes",
+          95: "Orage",
+          96: "Orage avec grêle",
+          99: "Orage avec grêle"
+        }
+      },
+      de: {
+        title: "Wettervorhersage",
+        subtitle: "Standalone: echte Wetterdaten mit Autovervollständigung, kein Backend erforderlich",
+        refresh: "Aktualisieren",
+        city: "Stadt",
+        language: "Sprache",
+        loading: "Laden...",
+        loadingLocation: "Standort wird erkannt...",
+        cityMap: "Stadtkarte",
+        noForecast: "Geben Sie einen Stadtnamen ein, um die Vorhersage anzuzeigen.",
+        consulting: "Echte Wetterdaten werden abgefragt...",
+        ready: "Fertig: {count} Ergebnisse",
+        error: "Konnte nicht geladen werden: {error}",
+        today: "Heute",
+        weatherCodes: {
+          0: "Klar",
+          1: "Meist klar",
+          2: "Teilweise bewölkt",
+          3: "Bewölkt",
+          45: "Neblig",
+          48: "Neblig",
+          51: "Leichter Nieselregen",
+          53: "Nieselregen",
+          55: "Starker Nieselregen",
+          61: "Leichter Regen",
+          63: "Regen",
+          65: "Starker Regen",
+          71: "Leichter Schneefall",
+          73: "Schneefall",
+          75: "Starker Schneefall",
+          80: "Leichte Schauer",
+          81: "Schauer",
+          82: "Starke Schauer",
+          85: "Schneeschauer",
+          86: "Starke Schneeschauer",
+          95: "Gewitter",
+          96: "Gewitter mit Hagel",
+          99: "Gewitter mit Hagel"
+        }
+      },
+      it: {
+        title: "Previsioni Meteo",
+        subtitle: "Standalone: dati meteorologici reali con autocompletamento, nessun backend necessario",
+        refresh: "Aggiorna",
+        city: "Città",
+        language: "Lingua",
+        loading: "Caricamento...",
+        loadingLocation: "Rilevamento posizione...",
+        cityMap: "Mappa della Città",
+        noForecast: "Digita un nome di città per visualizzare le previsioni.",
+        consulting: "Consultazione dati meteo reali...",
+        ready: "Pronto: {count} risultati",
+        error: "Impossibile caricare: {error}",
+        today: "Oggi",
+        weatherCodes: {
+          0: "Sereno",
+          1: "Quasi sereno",
+          2: "Parzialmente nuvoloso",
+          3: "Nuvoloso",
+          45: "Nebbioso",
+          48: "Nebbioso",
+          51: "Leggera pioggia",
+          53: "Pioggia",
+          55: "Forte pioggia",
+          61: "Pioggia leggera",
+          63: "Pioggia",
+          65: "Forte pioggia",
+          71: "Leggera nevicata",
+          73: "Nevicata",
+          75: "Forte nevicata",
+          80: "Leggeri rovesci",
+          81: "Rovesci",
+          82: "Forti rovesci",
+          85: "Rovesci di neve",
+          86: "Forti rovesci di neve",
+          95: "Temporale",
+          96: "Temporale con grandine",
+          99: "Temporale con grandine"
+        }
+      },
+      pt: {
+        title: "Previsão do Tempo",
+        subtitle: "Independente: dados meteorológicos reais com preenchimento automático, sem backend",
+        refresh: "Atualizar",
+        city: "Cidade",
+        language: "Idioma",
+        loading: "Carregando...",
+        loadingLocation: "Detectando localização...",
+        cityMap: "Mapa da Cidade",
+        noForecast: "Digite um nome de cidade para ver a previsão.",
+        consulting: "Consultando dados meteorológicos reais...",
+        ready: "Pronto: {count} resultados",
+        error: "Não foi possível carregar: {error}",
+        today: "Hoje",
+        weatherCodes: {
+          0: "Claro",
+          1: "Principalmente claro",
+          2: "Parcialmente nublado",
+          3: "Nublado",
+          45: "Neblina",
+          48: "Neblina",
+          51: "Garoa leve",
+          53: "Garoa",
+          55: "Garoa forte",
+          61: "Chuva leve",
+          63: "Chuva",
+          65: "Chuva forte",
+          71: "Neve leve",
+          73: "Neve",
+          75: "Neve forte",
+          80: "Chuvas esparsas leves",
+          81: "Chuvas esparsas",
+          82: "Chuvas esparsas fortes",
+          85: "Chuvas de neve",
+          86: "Chuvas de neve fortes",
+          95: "Tempestade",
+          96: "Tempestade com granizo",
+          99: "Tempestade com granizo"
+        }
+      }
+    };
+
+    let currentLang = localStorage.getItem("language") || "en";
+    let currentTimezone = "UTC";
+    let currentCoords = null;
+
     const state = document.getElementById("state");
     const forecastContainer = document.getElementById("forecast");
     const reloadButton = document.getElementById("reload");
@@ -331,11 +626,36 @@
     const cityList = document.getElementById("cityList");
     const cityMap = document.getElementById("cityMap");
     const mapLabel = document.getElementById("mapLabel");
+    const mapHeaderLabel = document.getElementById("mapHeaderLabel");
     const themeToggle = document.getElementById("themeToggle");
     const geolocateButton = document.getElementById("geolocate");
+    const languageSelect = document.getElementById("language");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const cityLabel = document.getElementById("cityLabel");
+    const languageLabel = document.getElementById("languageLabel");
+
     let cityAutocompleteTimer;
 
-    // Theme toggle initialization
+    function t(key, params = {}) {
+      let text = translations[currentLang]?.[key] || translations["en"]?.[key] || key;
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+      return text;
+    }
+
+    function updateUIText() {
+      document.title = t("title");
+      document.querySelector(".subtitle").textContent = t("subtitle");
+      reloadButton.textContent = t("refresh");
+      cityLabel.textContent = t("city");
+      languageLabel.textContent = t("language");
+      mapHeaderLabel.textContent = t("cityMap");
+      if (!cityInput.value.trim()) {
+        state.textContent = t("noForecast");
+      }
+    }
+
     function initTheme() {
       const savedTheme = localStorage.getItem("theme") || "dark";
       document.body.setAttribute("data-theme", savedTheme);
@@ -362,14 +682,20 @@
       return "warm";
     }
 
-    function getDateParts(isoDate) {
-      const date = new Date(`${isoDate}T00:00:00`);
-      const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long" }).format(date);
-      const shortDate = new Intl.DateTimeFormat("es-MX", {
+    function getDateParts(isoDate, timezone) {
+      const date = new Date(`${isoDate}T00:00:00Z`);
+      const formatter = new Intl.DateTimeFormat(currentLang === "en" ? "en-US" : currentLang, {
+        weekday: "long",
+        timeZone: timezone
+      });
+      const weekday = formatter.format(date);
+      const shortFormatter = new Intl.DateTimeFormat(currentLang === "en" ? "en-US" : currentLang, {
         day: "2-digit",
         month: "short",
-        year: "numeric"
-      }).format(date);
+        year: "numeric",
+        timeZone: timezone
+      });
+      const shortDate = shortFormatter.format(date);
       return { weekday, shortDate };
     }
 
@@ -387,19 +713,7 @@
     }
 
     function mapWeatherCode(code) {
-      if (code === 0) return "Despejado";
-      if (code === 1) return "Mayormente despejado";
-      if (code === 2) return "Parcialmente nublado";
-      if (code === 3) return "Nublado";
-      if (code === 45 || code === 48) return "Neblina";
-      if (code === 51 || code === 53 || code === 55) return "Llovizna";
-      if (code === 61 || code === 63 || code === 65) return "Lluvia";
-      if (code === 71 || code === 73 || code === 75) return "Nieve";
-      if (code === 80 || code === 81 || code === 82) return "Chubascos";
-      if (code === 85 || code === 86) return "Chubascos de nieve";
-      if (code === 95) return "Tormenta";
-      if (code === 96 || code === 99) return "Tormenta con granizo";
-      return "Desconocido";
+      return translations[currentLang]?.weatherCodes?.[code] || translations["en"]?.weatherCodes?.[code] || "Unknown";
     }
 
     function weatherEmoji(code) {
@@ -426,8 +740,8 @@
         card.style.animationDelay = `${i * 70}ms`;
 
         const tone = classForTemp(item.temperatureC);
-        const { weekday, shortDate } = getDateParts(item.date);
-        const todayBadge = i === 0 ? '<span class="today-badge">Hoy</span>' : "";
+        const { weekday, shortDate } = getDateParts(item.date, currentTimezone);
+        const todayBadge = i === 0 ? `<span class="today-badge">${t("today")}</span>` : "";
 
         card.innerHTML = `
           <div class="card-top">
@@ -435,7 +749,7 @@
           </div>
           <div class="card-emoji">${item.emoji}</div>
           <div class="date">${shortDate}</div>
-          <div class="summary">${item.summary ?? "Sin resumen"}</div>
+          <div class="summary">${item.summary ?? "No data"}</div>
           <div class="temp ${tone}">
             <span class="c">${item.temperatureCMax}° <span class="temp-min">/ ${item.temperatureCMin}°C</span></span>
             <span class="f">${item.temperatureFMax} / ${item.temperatureFMin} °F</span>
@@ -445,6 +759,20 @@
         forecastContainer.appendChild(card);
       });
     }
+
+    function updateTimeDisplay() {
+      const now = new Date();
+      const timeFormatter = new Intl.DateTimeFormat(currentLang === "en" ? "en-US" : currentLang, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: currentTimezone
+      });
+      const time = timeFormatter.format(now);
+      timeDisplay.textContent = `⏰ ${time} (${currentTimezone})`;
+    }
+
+    setInterval(updateTimeDisplay, 1000);
 
     function updateMap(latitude, longitude, label) {
       const delta = 0.16;
@@ -457,13 +785,13 @@
     }
 
     async function fetchRealByCity(city) {
-      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`;
+      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=${currentLang}&format=json`;
       const geocodeResponse = await fetch(geocodeUrl);
       if (!geocodeResponse.ok) throw new Error(`Geocoding HTTP ${geocodeResponse.status}`);
 
       const geocodeData = await geocodeResponse.json();
       const place = geocodeData?.results?.[0];
-      if (!place) throw new Error("Ciudad no encontrada");
+      if (!place) throw new Error("City not found");
 
       const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude.toFixed(4)}&longitude=${place.longitude.toFixed(4)}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
       const forecastResponse = await fetch(forecastUrl);
@@ -471,7 +799,9 @@
 
       const data = await forecastResponse.json();
       const daily = data?.daily;
-      if (!daily) throw new Error("No hay datos diarios");
+      if (!daily) throw new Error("No daily data");
+
+      currentTimezone = data?.timezone || "UTC";
 
       const dayCount = Math.min(
         daily.time?.length || 0,
@@ -494,7 +824,7 @@
     }
 
     async function fetchCitySuggestions(query) {
-      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=es&format=json`;
+      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=${currentLang}&format=json`;
       const response = await fetch(geocodeUrl);
       if (!response.ok) {
         return [];
@@ -517,32 +847,36 @@
       try {
         const city = cityInput.value.trim();
         if (!city) {
-          state.textContent = "Escribe una ciudad para consultar clima real.";
+          state.textContent = t("noForecast");
           forecastContainer.innerHTML = "";
           return;
         }
 
-        state.textContent = "Consultando clima real por internet...";
+        state.textContent = t("consulting");
         const { forecast, place } = await fetchRealByCity(city);
         draw(forecast);
         const locationLabel = place.country ? `${place.name}, ${place.country}` : place.name;
         updateMap(place.latitude, place.longitude, locationLabel);
+        updateTimeDisplay();
         localStorage.setItem("lastCity", city);
-        state.textContent = `Listo: ${forecast.length} resultados (real)`;
+        state.textContent = t("ready", { count: forecast.length });
       } catch (error) {
-        state.textContent = `No se pudo cargar: ${error.message}`;
+        state.textContent = t("error", { error: error.message });
       }
     }
 
     async function loadForecastByCoords(lat, lon, label) {
       try {
-        state.textContent = "Consultando clima real...";
+        state.textContent = t("consulting");
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Forecast HTTP ${res.status}`);
         const data = await res.json();
         const daily = data?.daily;
-        if (!daily) throw new Error("No hay datos diarios");
+        if (!daily) throw new Error("No daily data");
+
+        currentTimezone = data?.timezone || "UTC";
+
         const dayCount = Math.min(
           daily.time?.length || 0,
           daily.weather_code?.length || 0,
@@ -555,22 +889,36 @@
         );
         draw(forecast);
         updateMap(lat, lon, label);
-        state.textContent = `Listo: ${forecast.length} resultados (${label})`;
+        updateTimeDisplay();
+        state.textContent = t("ready", { count: forecast.length });
       } catch (error) {
-        state.textContent = `No se pudo cargar: ${error.message}`;
+        state.textContent = t("error", { error: error.message });
       }
     }
 
     geolocateButton.addEventListener("click", () => {
       if (!navigator.geolocation) {
-        state.textContent = "Geolocalización no disponible en este navegador.";
+        state.textContent = t("error", { error: "Geolocation not available" });
         return;
       }
-      state.textContent = "Detectando ubicación...";
+      state.textContent = t("loadingLocation");
       navigator.geolocation.getCurrentPosition(
-        (pos) => loadForecastByCoords(pos.coords.latitude, pos.coords.longitude, "Mi ubicación"),
-        (err) => { state.textContent = `Error de geolocalización: ${err.message}`; }
+        (pos) => {
+          currentCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+          loadForecastByCoords(pos.coords.latitude, pos.coords.longitude, "My Location");
+        },
+        (err) => { state.textContent = t("error", { error: err.message }); }
       );
+    });
+
+    languageSelect.addEventListener("change", (e) => {
+      currentLang = e.target.value;
+      localStorage.setItem("language", currentLang);
+      languageSelect.value = currentLang;
+      updateUIText();
+      if (cityInput.value.trim()) {
+        loadForecast();
+      }
     });
 
     reloadButton.addEventListener("click", loadForecast);
@@ -590,11 +938,32 @@
     cityInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") loadForecast();
     });
+    cityInput.addEventListener("change", loadForecast);
 
     initTheme();
-    cityInput.value = localStorage.getItem("lastCity") || "Wanaka";
-    updateMap(-44.6966, 169.1360, "Wanaka");
-    loadForecast();
+    languageSelect.value = currentLang;
+    updateUIText();
+    
+    // Auto-load geolocation on first load
+    if (navigator.geolocation && !localStorage.getItem("autoGeolocated")) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          localStorage.setItem("autoGeolocated", "true");
+          currentCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+          loadForecastByCoords(pos.coords.latitude, pos.coords.longitude, "My Location");
+        },
+        (err) => {
+          console.log("Geolocation failed, loading default city");
+          const lastCity = localStorage.getItem("lastCity") || "London";
+          cityInput.value = lastCity;
+          loadForecast();
+        }
+      );
+    } else {
+      const lastCity = localStorage.getItem("lastCity") || "London";
+      cityInput.value = lastCity;
+      loadForecast();
+    }
   </script>
 </body>
 </html>
