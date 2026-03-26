@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* ===== CSS Variables: Dark theme (default) ===== */
     :root {
       --bg-1: #020617;
       --bg-2: #0f172a;
@@ -29,6 +30,7 @@
       --hot: #f97316;
     }
 
+    /* ===== CSS Variables: Light theme override ===== */
     body[data-theme="light"] {
       --bg-1: #fffaf2;
       --bg-2: #eaf2ff;
@@ -50,6 +52,7 @@
       --hot: #ea580c;
     }
 
+    /* ===== Global reset and body layout ===== */
     * { box-sizing: border-box; }
 
     body {
@@ -65,12 +68,14 @@
       transition: background-color 300ms ease, color 300ms ease;
     }
 
+    /* ===== Main container shell ===== */
     .shell {
       max-width: 980px;
       margin: 0 auto;
       animation: rise 500ms ease-out;
     }
 
+    /* ===== Page heading and subtitle ===== */
     h1 {
       margin: 0;
       font-size: clamp(2rem, 4vw, 3rem);
@@ -82,6 +87,7 @@
       color: var(--muted);
     }
 
+    /* ===== Toolbar: buttons, city input, language selector ===== */
     .toolbar {
       display: flex;
       gap: 12px;
@@ -98,6 +104,7 @@
       font-size: 0.95rem;
     }
 
+    /* ===== Form inputs styling ===== */
     input {
       border: 1px solid var(--line);
       background: var(--surface);
@@ -120,6 +127,7 @@
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
     }
 
+    /* ===== Button styling ===== */
     button {
       border: none;
       background: var(--accent);
@@ -144,12 +152,14 @@
       font-size: 0.95rem;
     }
 
+    /* ===== Forecast cards grid layout ===== */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 12px;
     }
 
+    /* ===== Map section: wrapper, header, iframe ===== */
     .map-wrap {
       margin-top: 20px;
       border: 1px solid var(--line);
@@ -178,6 +188,7 @@
       display: block;
     }
 
+    /* ===== Forecast day card styling ===== */
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -245,10 +256,12 @@
       padding: 3px 8px;
     }
 
+    /* ===== Temperature color classes ===== */
     .cold { color: var(--cold); }
     .warm { color: var(--good); }
     .hot { color: var(--hot); }
 
+    /* ===== Animations: page rise-in and card entrance ===== */
     @keyframes rise {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -258,6 +271,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ===== Today's card highlight and badge ===== */
     .card.is-today {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px var(--accent), 0 14px 28px var(--shadow);
@@ -289,6 +303,7 @@
       font-size: 0.9rem;
     }
 
+    /* ===== Select dropdown styling ===== */
     select {
       border: 1px solid var(--line);
       background: var(--surface);
@@ -309,6 +324,7 @@
       height: 32px;
     }
 
+    /* ===== Local time display box ===== */
     .time-display {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -321,13 +337,40 @@
       color: var(--accent);
       box-shadow: 0 14px 28px var(--shadow);
     }
-  </style>
+
+    /* ===== Related news section (Wikipedia articles) ===== */
+    .news-section { margin-top: 24px; }
+    .news-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .news-title { font-size: 1.3rem; font-weight: 700; }
+    .news-source { font-size: 0.75rem; color: var(--muted); }
+    .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .news-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 28px var(--shadow);
+      opacity: 0;
+      transform: translateY(6px);
+      animation: cardIn 380ms ease-out forwards;
+    }
+    .news-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+    .news-card-title a { color: var(--accent); text-decoration: none; }
+    .news-card-title a:hover { text-decoration: underline; }
+    .news-card-snippet { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+    .news-card-snippet mark { background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--ink); border-radius: 2px; padding: 0 2px; }
+    .news-card-link { display: inline-block; margin-top: 10px; color: var(--accent); font-weight: 600; font-size: 0.85rem; text-decoration: none; }
+    .news-card-link:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
   <main class="shell">
+    <!-- ===== Page title and subtitle (translated on language change) ===== -->
     <h1>Weather Forecast</h1>
     <p class="subtitle">Standalone: real weather data with autocomplete, no backend needed</p>
 
+    <!-- ===== Toolbar: refresh, theme toggle, geolocation, city input, language select ===== -->
     <section class="toolbar">
       <button id="reload">Refresh</button>
       <button id="themeToggle" title="Toggle theme">🌙</button>
@@ -351,12 +394,15 @@
       <span class="state" id="state">Loading...</span>
     </section>
 
+    <!-- ===== Local time display for the selected city's timezone ===== -->
     <div id="timeDisplay" class="time-display"></div>
 
+    <!-- ===== 7-day weather forecast card grid ===== -->
     <section class="grid" id="forecast"></section>
 
     <div class="spacer"></div>
 
+    <!-- ===== OpenStreetMap embed showing the selected city ===== -->
     <section class="map-wrap">
       <div class="map-header">
         <span id="mapHeaderLabel">City Map</span>
@@ -369,10 +415,20 @@
         referrerpolicy="no-referrer-when-downgrade"
         title="City map"></iframe>
     </section>
+
+    <!-- ===== Related news section: Wikipedia articles about the city (in selected language) ===== -->
+    <section class="news-section" id="newsSection" style="display:none;">
+      <div class="news-header">
+        <span class="news-title" id="newsSectionTitle"></span>
+        <span class="news-source" id="newsSectionSource"></span>
+      </div>
+      <div class="news-grid" id="newsGrid"></div>
+    </section>
   </main>
 
   <script>
-    // Translations
+    // ===== Translation dictionaries for all 6 supported languages =====
+    // Each language contains: UI labels, weather code descriptions, and news section text
     const translations = {
       en: {
         title: "Weather Forecast",
@@ -388,6 +444,11 @@
         ready: "Ready: {count} results",
         error: "Could not load: {error}",
         today: "Today",
+        relatedNews: "Related News",
+        loadingNews: "Loading related articles...",
+        noNews: "No related articles found.",
+        readMore: "Read more",
+        poweredBy: "Powered by Wikipedia",
         weatherCodes: {
           0: "Clear",
           1: "Mostly clear",
@@ -428,6 +489,11 @@
         ready: "Listo: {count} resultados",
         error: "No se pudo cargar: {error}",
         today: "Hoy",
+        relatedNews: "Noticias Relacionadas",
+        loadingNews: "Cargando artículos relacionados...",
+        noNews: "No se encontraron artículos relacionados.",
+        readMore: "Leer más",
+        poweredBy: "Desarrollado por Wikipedia",
         weatherCodes: {
           0: "Despejado",
           1: "Mayormente despejado",
@@ -468,6 +534,11 @@
         ready: "Prêt: {count} résultats",
         error: "Impossible de charger: {error}",
         today: "Aujourd'hui",
+        relatedNews: "Actualités Associées",
+        loadingNews: "Chargement des articles associés...",
+        noNews: "Aucun article associé trouvé.",
+        readMore: "Lire la suite",
+        poweredBy: "Propulsé par Wikipédia",
         weatherCodes: {
           0: "Dégagé",
           1: "Principalement dégagé",
@@ -508,6 +579,11 @@
         ready: "Fertig: {count} Ergebnisse",
         error: "Konnte nicht geladen werden: {error}",
         today: "Heute",
+        relatedNews: "Verwandte Nachrichten",
+        loadingNews: "Verwandte Artikel werden geladen...",
+        noNews: "Keine verwandten Artikel gefunden.",
+        readMore: "Weiterlesen",
+        poweredBy: "Bereitgestellt von Wikipedia",
         weatherCodes: {
           0: "Klar",
           1: "Meist klar",
@@ -548,6 +624,11 @@
         ready: "Pronto: {count} risultati",
         error: "Impossibile caricare: {error}",
         today: "Oggi",
+        relatedNews: "Notizie Correlate",
+        loadingNews: "Caricamento articoli correlati...",
+        noNews: "Nessun articolo correlato trovato.",
+        readMore: "Leggi di più",
+        poweredBy: "Offerto da Wikipedia",
         weatherCodes: {
           0: "Sereno",
           1: "Quasi sereno",
@@ -588,6 +669,11 @@
         ready: "Pronto: {count} resultados",
         error: "Não foi possível carregar: {error}",
         today: "Hoje",
+        relatedNews: "Notícias Relacionadas",
+        loadingNews: "Carregando artigos relacionados...",
+        noNews: "Nenhum artigo relacionado encontrado.",
+        readMore: "Ler mais",
+        poweredBy: "Desenvolvido pela Wikipédia",
         weatherCodes: {
           0: "Claro",
           1: "Principalmente claro",
@@ -616,10 +702,12 @@
       }
     };
 
-    let currentLang = localStorage.getItem("language") || "en";
-    let currentTimezone = "UTC";
-    let currentCoords = null;
+    // ===== Global state variables =====
+    let currentLang = localStorage.getItem("language") || "en";  // Active language code
+    let currentTimezone = "UTC";  // Timezone of the selected city (updated on forecast load)
+    let currentCoords = null;     // Stored geolocation coordinates
 
+    // ===== DOM element references =====
     const state = document.getElementById("state");
     const forecastContainer = document.getElementById("forecast");
     const reloadButton = document.getElementById("reload");
@@ -635,8 +723,9 @@
     const cityLabel = document.getElementById("cityLabel");
     const languageLabel = document.getElementById("languageLabel");
 
-    let cityAutocompleteTimer;
+    let cityAutocompleteTimer;  // Debounce timer for city autocomplete
 
+    // Returns a translated string for the given key, with optional parameter interpolation
     function t(key, params = {}) {
       let text = translations[currentLang]?.[key] || translations["en"]?.[key] || key;
       Object.entries(params).forEach(([k, v]) => {
@@ -645,8 +734,10 @@
       return text;
     }
 
+    // Updates all static UI text elements to the current language
     function updateUIText() {
       document.title = t("title");
+      document.querySelector("h1").textContent = t("title");
       document.querySelector(".subtitle").textContent = t("subtitle");
       reloadButton.textContent = t("refresh");
       cityLabel.textContent = t("city");
@@ -657,16 +748,19 @@
       }
     }
 
+    // Loads the saved theme (dark/light) from localStorage and applies it
     function initTheme() {
       const savedTheme = localStorage.getItem("theme") || "dark";
       document.body.setAttribute("data-theme", savedTheme);
       updateThemeButton(savedTheme);
     }
 
+    // Switches the theme toggle button emoji based on the active theme
     function updateThemeButton(theme) {
       themeToggle.textContent = theme === "light" ? "🌙" : "☀️";
     }
 
+    // Toggles between dark and light theme, saving preference to localStorage
     function toggleTheme() {
       const currentTheme = document.body.getAttribute("data-theme") || "dark";
       const newTheme = currentTheme === "dark" ? "light" : "dark";
@@ -677,12 +771,14 @@
 
     themeToggle.addEventListener("click", toggleTheme);
 
+    // Returns a CSS class name (hot/cold/warm) based on temperature in Celsius
     function classForTemp(tempC) {
       if (tempC >= 35) return "hot";
       if (tempC <= 5) return "cold";
       return "warm";
     }
 
+    // Formats an ISO date string into localized weekday and short date using Intl.DateTimeFormat
     function getDateParts(isoDate, timezone) {
       const date = new Date(`${isoDate}T00:00:00Z`);
       const formatter = new Intl.DateTimeFormat(currentLang === "en" ? "en-US" : currentLang, {
@@ -700,6 +796,7 @@
       return { weekday, shortDate };
     }
 
+    // Builds a forecast item object with Celsius/Fahrenheit conversions
     function toForecastItem(dateIso, tempMaxC, tempMinC, summary, emoji) {
       return {
         date: dateIso,
@@ -713,10 +810,12 @@
       };
     }
 
+    // Translates a WMO weather code number into a human-readable description
     function mapWeatherCode(code) {
       return translations[currentLang]?.weatherCodes?.[code] || translations["en"]?.weatherCodes?.[code] || "Unknown";
     }
 
+    // Maps a WMO weather code to an appropriate emoji icon
     function weatherEmoji(code) {
       if (code === 0) return "☀️";
       if (code === 1 || code === 2) return "🌤️";
@@ -731,6 +830,7 @@
       return "🌡️";
     }
 
+    // Renders the forecast cards into the grid from an array of forecast items
     function draw(items) {
       forecastContainer.innerHTML = "";
 
@@ -761,6 +861,7 @@
       });
     }
 
+    // Updates the local time display using the city's timezone (runs every second)
     function updateTimeDisplay() {
       const now = new Date();
       const timeFormatter = new Intl.DateTimeFormat(currentLang === "en" ? "en-US" : currentLang, {
@@ -775,6 +876,7 @@
 
     setInterval(updateTimeDisplay, 1000);
 
+    // Updates the OpenStreetMap iframe to center on the given coordinates with a marker
     function updateMap(latitude, longitude, label) {
       const delta = 0.16;
       const minLon = (longitude - delta).toFixed(4);
@@ -785,6 +887,7 @@
       mapLabel.textContent = label;
     }
 
+    // Geocodes a city name via Open-Meteo API, then fetches its 7-day weather forecast
     async function fetchRealByCity(city) {
       const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=${currentLang}&format=json`;
       const geocodeResponse = await fetch(geocodeUrl);
@@ -824,6 +927,7 @@
       return { forecast, place };
     }
 
+    // Fetches up to 6 city suggestions from the geocoding API for the autocomplete datalist
     async function fetchCitySuggestions(query) {
       const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=${currentLang}&format=json`;
       const response = await fetch(geocodeUrl);
@@ -835,6 +939,7 @@
       return data?.results ?? [];
     }
 
+    // Populates the city input datalist with autocomplete options
     function updateCityDatalist(results) {
       cityList.innerHTML = "";
       results.forEach((place) => {
@@ -844,6 +949,7 @@
       });
     }
 
+    // Main forecast loader: geocodes the city input, fetches weather, renders cards, map, and news
     async function loadForecast() {
       try {
         const city = cityInput.value.trim();
@@ -861,11 +967,13 @@
         updateTimeDisplay();
         localStorage.setItem("lastCity", city);
         state.textContent = t("ready", { count: forecast.length });
+        fetchAndDrawNews(place.name);
       } catch (error) {
         state.textContent = t("error", { error: error.message });
       }
     }
 
+    // Loads forecast directly from latitude/longitude (used by geolocation)
     async function loadForecastByCoords(lat, lon, label) {
       try {
         state.textContent = t("consulting");
@@ -892,11 +1000,91 @@
         updateMap(lat, lon, label);
         updateTimeDisplay();
         state.textContent = t("ready", { count: forecast.length });
+        fetchAndDrawNews(label);
       } catch (error) {
         state.textContent = t("error", { error: error.message });
       }
     }
 
+    // Fetches related Wikipedia articles for the city (in the selected language) and renders news cards
+    async function fetchAndDrawNews(cityName) {
+      const newsSection = document.getElementById("newsSection");
+      const newsGrid = document.getElementById("newsGrid");
+      const newsSectionTitle = document.getElementById("newsSectionTitle");
+      const newsSectionSource = document.getElementById("newsSectionSource");
+
+      newsSection.style.display = "block";
+      newsSectionTitle.textContent = t("relatedNews");
+      newsSectionSource.textContent = t("poweredBy");
+      newsGrid.innerHTML = "";
+      const loadingP = document.createElement("p");
+      loadingP.style.color = "var(--muted)";
+      loadingP.textContent = t("loadingNews");
+      newsGrid.appendChild(loadingP);
+
+      try {
+        const lang = currentLang;
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cityName)}&format=json&origin=*&utf8=1&srlimit=5`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Wikipedia HTTP ${res.status}`);
+        const data = await res.json();
+        const results = data?.query?.search;
+
+        if (!results || results.length === 0) {
+          newsGrid.innerHTML = "";
+          const noP = document.createElement("p");
+          noP.style.color = "var(--muted)";
+          noP.textContent = t("noNews");
+          newsGrid.appendChild(noP);
+          return;
+        }
+
+        newsGrid.innerHTML = "";
+        results.forEach((article, i) => {
+          const card = document.createElement("article");
+          card.className = "news-card";
+          card.style.animationDelay = `${i * 70}ms`;
+          const articleUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(article.title.replace(/ /g, "_"))}`;
+
+          const snippet = article.snippet
+            .replace(/<span class="searchmatch">(.*?)<\/span>/g, "<mark>$1</mark>")
+            .replace(/<(?!\/?mark\b)[^>]*>/g, "");
+
+          const titleDiv = document.createElement("div");
+          titleDiv.className = "news-card-title";
+          const titleLink = document.createElement("a");
+          titleLink.href = articleUrl;
+          titleLink.target = "_blank";
+          titleLink.rel = "noopener noreferrer";
+          titleLink.textContent = article.title;
+          titleDiv.appendChild(titleLink);
+
+          const snippetDiv = document.createElement("div");
+          snippetDiv.className = "news-card-snippet";
+          snippetDiv.innerHTML = snippet + "...";
+
+          const readMoreLink = document.createElement("a");
+          readMoreLink.className = "news-card-link";
+          readMoreLink.href = articleUrl;
+          readMoreLink.target = "_blank";
+          readMoreLink.rel = "noopener noreferrer";
+          readMoreLink.textContent = t("readMore") + " \u2192";
+
+          card.appendChild(titleDiv);
+          card.appendChild(snippetDiv);
+          card.appendChild(readMoreLink);
+          newsGrid.appendChild(card);
+        });
+      } catch (err) {
+        newsGrid.innerHTML = "";
+        const errP = document.createElement("p");
+        errP.style.color = "var(--muted)";
+        errP.textContent = t("noNews");
+        newsGrid.appendChild(errP);
+      }
+    }
+
+    // ===== Event listener: Geolocation button – detects user's position and loads forecast =====
     geolocateButton.addEventListener("click", () => {
       if (!navigator.geolocation) {
         state.textContent = t("error", { error: "Geolocation not available" });
@@ -912,6 +1100,7 @@
       );
     });
 
+    // ===== Event listener: Language selector – switches language and reloads forecast =====
     languageSelect.addEventListener("change", (e) => {
       currentLang = e.target.value;
       localStorage.setItem("language", currentLang);
@@ -922,6 +1111,7 @@
       }
     });
 
+    // ===== Event listeners: Reload button and city input (autocomplete + Enter key) =====
     reloadButton.addEventListener("click", loadForecast);
     cityInput.addEventListener("input", () => {
       const query = cityInput.value.trim();
@@ -941,11 +1131,12 @@
     });
     cityInput.addEventListener("change", loadForecast);
 
+    // ===== Initialization: apply saved theme, set language, update UI =====
     initTheme();
     languageSelect.value = currentLang;
     updateUIText();
     
-    // Auto-load geolocation on first load
+    // ===== Auto-load: try geolocation on first visit, fall back to last city or London =====
     if (navigator.geolocation && !localStorage.getItem("autoGeolocated")) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
